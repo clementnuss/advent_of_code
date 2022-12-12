@@ -18,7 +18,7 @@ type Directory struct {
 
 func main() {
 
-	log.Println("AOC - 2022.12.04+1")
+	log.Println("AOC - 2022.12.07+1")
 
 	inputBytes, err := os.ReadFile("../input")
 	if err != nil {

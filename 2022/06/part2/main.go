@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	log.Println("AOC - 2022.12.04+1")
+	log.Println("AOC - 2022.12.06+2")
 
 	inputBytes, err := os.ReadFile("../input")
 	if err != nil {

@@ -55,7 +55,7 @@ func parseStacks(input []string, index int) []Stack {
 
 func main() {
 
-	log.Println("AOC - 2022.12.05+1")
+	log.Println("AOC - 2022.12.05+2")
 
 	inputBytes, err := os.ReadFile("../input")
 	if err != nil {
