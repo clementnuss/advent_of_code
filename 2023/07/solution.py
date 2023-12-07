@@ -6,8 +6,14 @@ from collections import OrderedDict, defaultdict
 
 hands = []
 
+cards = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2","J2"]
+card_values = {}
+for i, c in enumerate(cards):
+    card_values[c] = len(cards) - i
+
+
 with open("07/input") as f:
-# with open("07/example_input") as f:
+    # with open("07/example_input") as f:
     lines = f.read().strip().split("\n")
     for l in lines:
         spl = l.split(" ")
@@ -15,15 +21,9 @@ with open("07/input") as f:
         bid = int(spl[1])
         hands.append((hand, bid))
 
-high_cards = OrderedDict()
-one_pair = OrderedDict()
-two_pair = OrderedDict()
-three_of_a_kind = OrderedDict()
-full_house = OrderedDict()
-four_of_a_kind = OrderedDict()
-five_of_a_kind = OrderedDict()
+typed_hands = []
 
-for hand, bid in hands:
+def caracterize_hand(hand, bid, p2):
     d = {}
     for l in hand:
         if l in d:
@@ -31,60 +31,43 @@ for hand, bid in hands:
         else:
             d[l] = [l]
 
-    if len(d) == 5:
-        high_cards[hand] = bid
-    elif len(d) == 4:
-        one_pair[hand] = bid
-    elif len(d) == 3:
-        parsed = False
-        for card, lst in d.items():
-            if len(lst) == 3:
-                three_of_a_kind[hand] = bid
-                parsed = True
-        if not parsed:
-            two_pair[hand] = bid
-    elif len(d) == 2:
-        parsed = False
-        for card, lst in d.items():
-            if len(lst) == 4:
-                four_of_a_kind[hand] = bid
-                parsed = True
-        if not parsed:
-            full_house[hand] = bid
-    elif len(d) == 1:
-        five_of_a_kind[hand] = bid
+    if p2:
+        jokers = len(d.pop("J", []))
+        d = sorted(list(map(lambda x: len(x), d.values())))
+        if jokers == 5:
+            d = [5]
+        elif jokers > 0:
+            d[-1] += jokers
+    else:
+        d = sorted(list(map(lambda x: len(x), d.values())))
 
+    hand_type = 0
+    match d:
+        case *_, 5:
+            hand_type = 10
+        case *_, 4:
+            hand_type = 9
+        case *_, 2, 3:  # full house
+            hand_type = 8
+        case *_, 3:  # three of a kind
+            hand_type = 7
+        case *_, 2, 2:
+            hand_type = 6
+        case *_, 2:
+            hand_type = 5
+        case *_, 1:
+            hand_type = 4
 
-cards = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"]
-card_values = {}
-for i, c in enumerate(cards):
-    card_values[c] = len(cards) - i
+    typed_hands.append((hand_type, *map(card_values.get, hand), bid))
 
+for hand, bid in hands:
+    caracterize_hand(hand, bid, False)
+sorted_hands = sorted(typed_hands)
+print(sum(map(lambda item: item[1][-1] * (item[0] + 1), enumerate(sorted_hands))))
 
-def sort_hands(item1, item2):
-    for i in range(len(item1[0])):
-        c1 = item1[0][i]
-        c2 = item2[0][i]
-        if c1 == c2:
-            continue
-        else:
-            return card_values[c2] - card_values[c1]
-
-    print("error", item1, item2)
-
-
-res = []
-for d in [
-    five_of_a_kind,
-    four_of_a_kind,
-    full_house,
-    three_of_a_kind,
-    two_pair,
-    one_pair,
-    high_cards,
-]:
-    for _, bid in sorted(d.items(), key=cmp_to_key(sort_hands)):
-        res.append(bid)
-
-print(sum(map(lambda item: item[1] * (len(res) - item[0]), enumerate(res))))
-
+typed_hands.clear()
+card_values["J"] = 1
+for hand, bid in hands:
+    caracterize_hand(hand, bid, True)
+sorted_hands = sorted(typed_hands)
+print(sum(map(lambda item: item[1][-1] * (item[0] + 1), enumerate(sorted_hands))))
