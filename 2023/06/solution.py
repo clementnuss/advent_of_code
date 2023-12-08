@@ -10,31 +10,30 @@ with open("06/input") as f:
     ns = [map(int, re.findall(r"\d+", l)) for l in lines]
 
 
-td = list(zip(ns[0], ns[1]))
+rd = list(zip(ns[0], ns[1]))
 
-res1 = []
-for time, record in td:
-    ways = 0
-    for speed in range(1, time):
-        dist = speed * (time - speed)
-        if dist > record:
-            ways += 1
-    if ways > 0:
-        res1.append(ways)
+res1 = 1
+for duration, record in rd:
+    record += 1
+    h_min = math.ceil((float(duration) - math.sqrt(duration**2 - 4 * record)) / 2.0)
+    h_max = (
+        math.floor((float(duration) + math.sqrt(duration**2 - 4 * record)) / 2.0) + 1
+    )
+    res1 *= h_max - h_min
 
-print(functools.reduce(lambda x, y: x * y, res1))
+print(res1)
 
 # part 2
 
 race2 = [map(int, re.findall(r"\d+", l.replace(" ", ""))) for l in lines]
-td2 = list(zip(race2[0], race2[1]))
-for time, record in td2:
-    ways = 0
-    for speed in range(1, time):
-        dist = speed * (time - speed)
-        if dist > record:
-            ways += 1
-    if ways > 0:
-        res1.append(ways)
+dr = list(zip(race2[0], race2[1]))
 
-print(ways)
+for duration, record in dr:
+    record += 1
+    h_min = math.ceil((float(duration) - math.sqrt(duration**2 - 4 * record)) / 2.0)
+    h_max = (
+        math.floor((float(duration) + math.sqrt(duration**2 - 4 * record)) / 2.0) + 1
+    )
+    res2 = h_max - h_min
+    print(res2)
+
