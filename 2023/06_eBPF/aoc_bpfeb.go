@@ -60,8 +60,7 @@ type aocProgramSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type aocMapSpecs struct {
-	AocMap      *ebpf.MapSpec `ebpf:"aoc_map"`
-	CountingMap *ebpf.MapSpec `ebpf:"counting_map"`
+	AocMap *ebpf.MapSpec `ebpf:"aoc_map"`
 }
 
 // aocObjects contains all objects after they have been loaded into the kernel.
@@ -83,14 +82,12 @@ func (o *aocObjects) Close() error {
 //
 // It can be passed to loadAocObjects or ebpf.CollectionSpec.LoadAndAssign.
 type aocMaps struct {
-	AocMap      *ebpf.Map `ebpf:"aoc_map"`
-	CountingMap *ebpf.Map `ebpf:"counting_map"`
+	AocMap *ebpf.Map `ebpf:"aoc_map"`
 }
 
 func (m *aocMaps) Close() error {
 	return _AocClose(
 		m.AocMap,
-		m.CountingMap,
 	)
 }
 

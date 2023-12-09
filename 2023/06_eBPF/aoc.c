@@ -4,15 +4,7 @@
 #include <bpf/bpf_helpers.h>
 
 char __license[] SEC("license") = "Dual MIT/GPL";
-const char aoc_path[] = "/tmp/lima/aoc";
-
-struct
-{
-    __uint(type, BPF_MAP_TYPE_ARRAY);
-    __type(key, __u32);
-    __type(value, __u64);
-    __uint(max_entries, 1);
-} counting_map SEC(".maps");
+const char aoc_path[] = "/tmp/lima/aoc06/trigger";
 
 struct
 {
@@ -50,8 +42,8 @@ __u64 int_sqrt(__u64 s)
     // Update
     __u64 x1 = (x0 + s / x0) / 2;
 
-    __u32 safeguard = 0;
-    while (x1 < x0 && safeguard < 300) // Bound check
+    __u32 safeguard = 0; // prevent infinite loops
+    while (x1 < x0 && safeguard < 300)
     {
         x0 = x1;
         x1 = (x0 + s / x0) / 2;
@@ -64,9 +56,7 @@ __u64 compute_ways(__u64 duration, __u64 record)
 {
     record += 1; // we must be strictly greater than the last record
     __u64 h_min, h_max;
-    __u64 h_min_100 = int_sqrt(10000 * (duration * duration - 4 * record));
-    h_min_100 = 100 * duration - h_min_100;
-    h_min_100 /= 2;
+    __u64 h_min_100 = (100 * duration - int_sqrt(10000 * (duration * duration - 4 * record))) / 2;
     if (h_min_100 % 100 > 0) // manually implement the ceiling function
     {
         h_min = h_min_100 / 100 + 1;
@@ -115,7 +105,7 @@ int aoc06(struct openat_info *info)
         __u64 tuple = *dur_rec;
         __u64 duration = tuple >> 32;
         __u64 record = tuple & (((__u64)1 << 32) - 1);
-        bpf_printk("duration: %8d record: %8d", duration, record);
+        bpf_printk("duration: %8llu record: %8llu", duration, record);
         res1 *= compute_ways(duration, record);
 
         // parse part2 number
@@ -135,9 +125,9 @@ int aoc06(struct openat_info *info)
             tmp /= 10;
         }
         rec2 += record;
-
-        bpf_printk("dur2: %llu rec2: %llu", dur2, rec2);
     }
+
+    bpf_printk("dur2: %llu rec2: %llu", dur2, rec2);
     res2 = compute_ways(dur2, rec2);
     bpf_printk("res1: %llu res2: %llu", res1, res2);
 
