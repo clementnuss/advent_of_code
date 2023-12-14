@@ -1,37 +1,29 @@
-from functools import cache, reduce
-from itertools import combinations
-import re
+import numpy as np
 
 # with open("13/example_input") as f:
 with open("13/input") as f:
     patterns = [l.split() for l in f.read().strip().split("\n\n")]
 
 
-def check(p, l):
-    return p[: l + 1] == p[l + 1 :][::-1]
+def detect_pattern(p, vertical=False,dist=0):
+    i = 1
+    while i < len(p):
+        comp_size = min(i, len(p) - i)
+        left = p[i - comp_size : i]
+        right = p[i : i + comp_size][::-1]
 
-
-def detect_pattern(p, vertical=False):
-    ret = 0
-    if len(p) % 2 != 0:
-        ret += detect_pattern(p[:-1], vertical)  # ignore last line
-        right_hack = p + p[:1]  # make last line equal to first
-        ret += detect_pattern(right_hack, vertical)
-        return ret
-
-    i = 0
-    while i < len(p) - 1:
-        if p[i] == p[i + 1]:
-            if check(p, i):
-                return (i+1) * (100 if not vertical else 1)
+        if np.sum(left ^ right) == dist:
+            return (i) * (100 if not vertical else 1)
         i += 1
 
     return 0
 
-res1 = 0
-for p in patterns:
-    res1 += detect_pattern(p)
-    p_t = ["".join(x) for x in list(zip(*p))]
-    res1 += detect_pattern(p_t, vertical=True)
 
-print(res1)
+for dist in [0, 1]:
+    res = 0
+    for p in patterns:
+        a = np.array([[c == "#" for c in l] for l in p])
+        res += detect_pattern(a,dist=dist)
+        res += detect_pattern(a.T, vertical=True, dist=dist)
+
+    print(res)
