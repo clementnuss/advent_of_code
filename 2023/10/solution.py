@@ -76,7 +76,7 @@ def next(pos, dir):
 pos = S
 dir = right
 
-loop = set()
+loop = list()
 
 
 def valid(pos):
@@ -95,70 +95,26 @@ for d in [left, right, up, down]:
             print((i, j), ds)
 
 pos = dir(S)
-loop.add(S)
+loop.append(S)
 
-res1 = 1
 while pos != S:
     pos, dir = next(pos, dir)
-    loop.add(pos)
-    res1 += 1
-    # print(pos, dir)
+    loop.append(pos)
 
-print(res1 / 2)
+print(len(loop) / 2)
 
+for i in range(len(loop)):
+    # https://en.wikipedia.org/wiki/Shoelace_formula
+    yi1, xi1 = loop[i]
+    yi1 = len(lines) - yi1
+    yi2, xi2 = loop[(i + 1) % len(loop)]
+    yi2 = len(lines) - yi2
+    det = (yi1 + yi2) * (xi1 - xi2)
+    res2 += det
 
-def iterative_dfs(graph, node):
-    visited = [False] * len(graph)
-    queue = [node]
+# Pick's theorem: https://en.wikipedia.org/wiki/Pick%27s_theorem
+# area = interior + boundary/2 - 1
+area = res2 / 2
+interior = area - (len(loop) / 2) + 1
 
-    while queue:
-        current_node = queue.pop(0)
-
-        if not visited[current_node]:
-            visited[current_node] = True
-            connected_component = [current_node]
-
-            for neighbor in graph[current_node]:
-                if not visited[neighbor]:
-                    queue.append(neighbor)
-                    connected_component.append(neighbor)
-
-            yield connected_component
-
-
-visited = set()
-
-def dfs(pos):
-    queue = [pos]
-    connected_component = []
-
-    while queue:
-        curr = queue.pop(0)
-        if curr not in visited:
-            visited.add(curr)
-            for neighbor in filter(
-                lambda p: valid(p), [d(pos) for d in [up, down, left, right]]
-            ):
-                if neighbor not in visited and neighbor not in loop:
-                    connected_component.append(neighbor)
-                    queue.append(neighbor)
-
-    yield connected_component
-
-
-def find_connected_components():
-    connected_components = []
-
-    for i in range(len(lines)):
-        for j in range(len(lines[0])):
-            pos = (i, j)
-            if pos not in visited and pos not in loop:
-                for cc in dfs(pos):
-                    connected_components.append(cc)
-
-    return connected_components
-
-
-cc = find_connected_components()
-# print(cc)
-print(res2)
+print(interior)
