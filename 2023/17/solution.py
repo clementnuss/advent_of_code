@@ -1,10 +1,9 @@
-import functools
-import sys
-
-sys.setrecursionlimit(10000000)
+from collections import defaultdict
+import heapq
 
 
-with open("./17/example_input") as f:
+# with open("./17/example_input") as f:
+with open("./17/input") as f:
     lines = f.read().strip().split("\n")
 
 # grid represented in the complex plane.
@@ -22,29 +21,44 @@ ROWS, COLS = len(lines), len(lines[0])
 INVALID = 10000000
 
 
-@functools.cache
-def dp(z: complex, dir: complex, rem):
-    if z not in grid:
-        return INVALID
+def a_star(p2=False):
+    heap = [(0, -1, 0 + 0j, 1 + 0j, 3 if not p2 else 10)]
+    best = defaultdict(lambda: 1_000_000_000_000)  # z, dir, remaining
 
-    if z == (COLS - 1) + (ROWS - 1) * 1j:
-        return grid[z]
+    step = 0
+    while heap:
+        heat_loss, _, z, dir, rem = heapq.heappop(heap)
+        if z not in grid:
+            continue
 
-    a = []
-    if rem > 0:
-        a.append(grid[z] + dp(z + dir, dir, rem - 1))
+        if z == (COLS - 1) + (ROWS - 1) * 1j:
+            if not p2 or rem < 7:
+                # print(step)
+                return heat_loss
 
-    newdir = (
-        dir * 1j
-    ).conjugate()  # *  1j == 90˚ counter-clockwise. conjugate as Im origin upside down
-    a.append(grid[z] + dp(z + newdir, newdir, 3))
-    newdir = (
-        dir * -1j
-    ).conjugate()  # * -1j == 90˚ clockwise. conjugate as Im origin upside down
-    a.append(grid[z] + dp(z + newdir, newdir, 3))
+        newdirs = []  # (new dir, remaining moves)
+        if rem > 0:
+            newdirs.append((dir, rem))
+        if not p2 or rem < 7:
+            newdirs.append(
+                (dir * 1j.conjugate(), 3 if not p2 else 10)
+            )  # *  1j == 90˚ counter-clockwise. conjugate as Im origin upside down
+            newdirs.append(
+                (dir * -1j.conjugate(), 3 if not p2 else 10)
+            )  # * -1j == 90˚ clockwise. conjugate as Im origin upside down
+        for d, rem in newdirs:
+            z2 = z + d
+            rem -= 1
+            if z2 not in grid:
+                continue
+            dist2 = heat_loss + grid[z2]
+            if dist2 >= best[z2, d, rem]:
+                continue
 
-    return min(a)
+            best[z2, d, rem] = dist2
+            heapq.heappush(heap, (dist2, step, z2, d, rem))
+            step += 1
 
 
-right = dp(0 + 0j, 1 + 0j, 3)
-print(right)
+print(a_star())
+print(a_star(p2=True))
